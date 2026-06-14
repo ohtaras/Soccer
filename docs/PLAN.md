@@ -13,10 +13,10 @@
   `backend/data/ingestion/csv_loader.py`
 - **Αγώνες ημέρας**: ESPN public scoreboard JSON endpoint (χωρίς API key),
   κάλυψη όλων των παραπάνω λιγκών + UEFA Champions League/Europa
-  League/Conference League, FIFA World Cup, και βασικές εκτός Ευρώπης λίγκες
-  (MLS, Liga MX, Brasileirão, Liga Profesional Argentina, Saudi Pro League,
-  J1 League — μόνο για εμφάνιση αγώνων, χωρίς ιστορικά δεδομένα ακόμα) —
-  `backend/data/ingestion/fixtures.py`
+  League/Conference League, FIFA World Cup, και πολλές εκτός Ευρώπης λίγκες
+  (MLS, Liga MX, Brasileirão, Αργεντινή Primera/Nacional B/Primera B/Primera
+  C, Βολιβία, Χιλή, Saudi Pro League, J1 League — μόνο για εμφάνιση αγώνων,
+  χωρίς ιστορικά δεδομένα ακόμα) — `backend/data/ingestion/fixtures.py`
 - **Μελλοντικά**: δυνατότητα προσθήκης API key (π.χ. API-Football) για live
   ενημερώσεις/odds.
 

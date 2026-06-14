@@ -38,6 +38,11 @@ LEAGUES = {
     "mex.1": "Liga MX",
     "bra.1": "Brasileirão",
     "arg.1": "Liga Profesional Argentina",
+    "arg.2": "Primera Nacional",
+    "arg.3": "Primera B",
+    "arg.4": "Primera C",
+    "bol.1": "Liga Profesional Boliviana",
+    "chi.1": "Primera División de Chile",
     "ksa.1": "Saudi Pro League",
     "jpn.1": "J1 League",
 }
