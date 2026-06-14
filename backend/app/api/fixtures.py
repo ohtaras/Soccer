@@ -41,3 +41,14 @@ def debug_live_football_data_raw():
     if not live_football_data.is_configured():
         return {"error": "RAPIDAPI_KEY not set"}
     return live_football_data.get_raw_matches_by_date()
+
+
+@router.get("/debug/live-football-data-leagues-raw")
+def debug_live_football_data_leagues_raw():
+    """Temporary debug endpoint to inspect the leagues-with-country API response shape."""
+    if not live_football_data.is_configured():
+        return {"error": "RAPIDAPI_KEY not set"}
+    try:
+        return live_football_data.get_raw_leagues_with_country()
+    except Exception as exc:
+        return {"error": str(exc)}

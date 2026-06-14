@@ -49,6 +49,18 @@ def get_raw_matches_by_date(day: date | None = None) -> dict:
     return data
 
 
+def get_raw_leagues_with_country() -> dict:
+    """Returns the raw "leagues list with country" API response (uncached)."""
+    api_key = os.environ["RAPIDAPI_KEY"]
+    response = requests.get(
+        LEAGUES_WITH_COUNTRY_URL,
+        headers={"x-rapidapi-key": api_key, "x-rapidapi-host": API_HOST},
+        timeout=30,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 def get_leagues_by_id() -> dict[int, str]:
     """Returns a {league_id: "Country - League Name"} map, e.g. {203: "Norway - OBOS-ligaen"}.
 
@@ -60,14 +72,7 @@ def get_leagues_by_id() -> dict[int, str]:
     if _leagues_cache and time.time() - _leagues_cache[0] < _LEAGUES_CACHE_TTL_SECONDS:
         return _leagues_cache[1]
 
-    api_key = os.environ["RAPIDAPI_KEY"]
-    response = requests.get(
-        LEAGUES_WITH_COUNTRY_URL,
-        headers={"x-rapidapi-key": api_key, "x-rapidapi-host": API_HOST},
-        timeout=30,
-    )
-    response.raise_for_status()
-    data = response.json()
+    data = get_raw_leagues_with_country()
 
     leagues_by_id: dict[int, str] = {}
     for country in data.get("response", {}).get("leagues", []):
