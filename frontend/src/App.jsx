@@ -3,6 +3,35 @@ import './App.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
+const STATUS_LABELS = {
+  pre: 'Προγρ.',
+  in: 'LIVE',
+  post: 'Τελ.',
+}
+
+function formatTime(isoDate) {
+  if (!isoDate) return '--:--'
+  const date = new Date(isoDate)
+  return date.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })
+}
+
+function groupByLeague(fixtures) {
+  const groups = []
+  const indexByLeague = new Map()
+
+  fixtures.forEach((fixture, index) => {
+    let group = indexByLeague.get(fixture.league)
+    if (!group) {
+      group = { league: fixture.league, matches: [] }
+      indexByLeague.set(fixture.league, group)
+      groups.push(group)
+    }
+    group.matches.push({ fixture, index })
+  })
+
+  return groups
+}
+
 function App() {
   const [fixtures, setFixtures] = useState([])
   const [predictions, setPredictions] = useState({})
@@ -37,6 +66,8 @@ function App() {
       .catch((err) => setPredictions((prev) => ({ ...prev, [index]: { error: err.message } })))
   }
 
+  const groups = groupByLeague(fixtures)
+
   return (
     <main className="container">
       <h1>Αγώνες Ημέρας</h1>
@@ -47,46 +78,50 @@ function App() {
 
       {!loading && !error && fixtures.length === 0 && <p>Δεν υπάρχουν αγώνες σήμερα.</p>}
 
-      <ul className="fixtures">
-        {fixtures.map((fixture, index) => {
-          const prediction = predictions[index]
-          return (
-            <li key={index} className="fixture">
-              <div className="fixture-header">
-                <span className="league">{fixture.league}</span>
-                <span className="status">{fixture.status}</span>
-              </div>
-              <div className="teams">
-                <span>{fixture.home_team}</span>
-                <span className="score">
-                  {fixture.home_score ?? '-'} : {fixture.away_score ?? '-'}
-                </span>
-                <span>{fixture.away_team}</span>
-              </div>
+      {groups.map((group) => (
+        <section className="league-group" key={group.league}>
+          <h2 className="league-title">{group.league}</h2>
+          <ul className="fixtures">
+            {group.matches.map(({ fixture, index }) => {
+              const prediction = predictions[index]
+              return (
+                <li key={index} className="fixture">
+                  <div className="fixture-row">
+                    <span className={`status status-${fixture.status}`}>
+                      {fixture.status === 'pre' ? formatTime(fixture.date) : STATUS_LABELS[fixture.status]}
+                    </span>
+                    <span className="team home-team">{fixture.home_team}</span>
+                    <span className="score">
+                      {fixture.home_score ?? '-'} : {fixture.away_score ?? '-'}
+                    </span>
+                    <span className="team away-team">{fixture.away_team}</span>
+                  </div>
 
-              {!prediction && (
-                <button onClick={() => loadPrediction(fixture, index)}>Πρόβλεψη</button>
-              )}
-              {prediction && prediction.error && (
-                <p className="error">{prediction.error}</p>
-              )}
-              {prediction && !prediction.error && (
-                <div className="prediction">
-                  <p>
-                    Αναμενόμενο σκορ: {prediction.expected_home_goals.toFixed(2)} -{' '}
-                    {prediction.expected_away_goals.toFixed(2)}
-                  </p>
-                  <p>
-                    1: {(prediction.home_win_prob * 100).toFixed(1)}% | X:{' '}
-                    {(prediction.draw_prob * 100).toFixed(1)}% | 2:{' '}
-                    {(prediction.away_win_prob * 100).toFixed(1)}%
-                  </p>
-                </div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
+                  {!prediction && (
+                    <button onClick={() => loadPrediction(fixture, index)}>Πρόβλεψη</button>
+                  )}
+                  {prediction && prediction.error && (
+                    <p className="error">{prediction.error}</p>
+                  )}
+                  {prediction && !prediction.error && (
+                    <div className="prediction">
+                      <p>
+                        Αναμενόμενο σκορ: {prediction.expected_home_goals.toFixed(2)} -{' '}
+                        {prediction.expected_away_goals.toFixed(2)}
+                      </p>
+                      <p>
+                        1: {(prediction.home_win_prob * 100).toFixed(1)}% | X:{' '}
+                        {(prediction.draw_prob * 100).toFixed(1)}% | 2:{' '}
+                        {(prediction.away_win_prob * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ))}
     </main>
   )
 }

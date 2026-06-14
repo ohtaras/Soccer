@@ -63,13 +63,17 @@ def get_fixtures_for_day(day: date | None = None) -> list[dict]:
         if status.get("cancelled"):
             continue
 
+        league_name = LEAGUES_BY_ID.get(match["leagueId"])
+        if league_name is None:
+            continue
+
         state = _status_to_state(status)
         home = match["home"]
         away = match["away"]
 
         fixtures.append(
             {
-                "league": LEAGUES_BY_ID.get(match["leagueId"], f"League {match['leagueId']}"),
+                "league": league_name,
                 "date": status.get("utcTime"),
                 "status": state,
                 "home_team": home["name"],
