@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { getCountryFlag } from './countryFlags'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
@@ -13,6 +14,17 @@ function formatTime(isoDate) {
   if (!isoDate) return '--:--'
   const date = new Date(isoDate)
   return date.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })
+}
+
+function teamLogoUrl(teamId) {
+  return teamId ? `https://images.fotmob.com/image_resources/logo/teamlogo/${teamId}_small.png` : null
+}
+
+function TeamLogo({ teamId, name }) {
+  const [hidden, setHidden] = useState(false)
+  const url = teamLogoUrl(teamId)
+  if (!url || hidden) return <span className="team-logo team-logo-placeholder" />
+  return <img className="team-logo" src={url} alt="" onError={() => setHidden(true)} />
 }
 
 function groupByLeague(fixtures) {
@@ -80,7 +92,9 @@ function App() {
 
       {groups.map((group) => (
         <section className="league-group" key={group.league}>
-          <h2 className="league-title">{group.league}</h2>
+          <h2 className="league-title">
+            <span className="flag">{getCountryFlag(group.league)}</span> {group.league}
+          </h2>
           <ul className="fixtures">
             {group.matches.map(({ fixture, index }) => {
               const prediction = predictions[index]
@@ -88,13 +102,23 @@ function App() {
                 <li key={index} className="fixture">
                   <div className="fixture-row">
                     <span className={`status status-${fixture.status}`}>
-                      {fixture.status === 'pre' ? formatTime(fixture.date) : STATUS_LABELS[fixture.status]}
+                      {fixture.status === 'pre'
+                        ? formatTime(fixture.date)
+                        : fixture.status === 'in'
+                          ? fixture.minute || STATUS_LABELS.in
+                          : STATUS_LABELS.post}
                     </span>
-                    <span className="team home-team">{fixture.home_team}</span>
+                    <span className="team home-team">
+                      <span className="team-name">{fixture.home_team}</span>
+                      <TeamLogo teamId={fixture.home_team_id} />
+                    </span>
                     <span className="score">
                       {fixture.home_score ?? '-'} : {fixture.away_score ?? '-'}
                     </span>
-                    <span className="team away-team">{fixture.away_team}</span>
+                    <span className="team away-team">
+                      <TeamLogo teamId={fixture.away_team_id} />
+                      <span className="team-name">{fixture.away_team}</span>
+                    </span>
                   </div>
 
                   {!prediction && (
