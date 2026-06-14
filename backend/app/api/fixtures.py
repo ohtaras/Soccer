@@ -14,7 +14,15 @@ router = APIRouter()
 @router.get("/fixtures/today")
 def fixtures_today():
     fixtures = None
-    if api_football.is_configured():
+
+    if live_football_data.is_configured():
+        try:
+            fixtures = live_football_data.get_fixtures_for_day()
+        except Exception:
+            logger.exception("Free API Live Football Data fetch failed, trying next source")
+            fixtures = None
+
+    if fixtures is None and api_football.is_configured():
         try:
             fixtures = api_football.get_fixtures_for_day()
         except Exception:
