@@ -16,12 +16,20 @@ from app.db.models import Match, Team
 BASE_URL = "https://www.football-data.co.uk/mmz4281/{season}/{div}.csv"
 
 # football-data.co.uk division codes -> readable league name
+# (must match the league names used in data/ingestion/fixtures.py)
 LEAGUES = {
     "E0": "Premier League",
+    "E1": "Championship",
     "SP1": "La Liga",
     "D1": "Bundesliga",
     "I1": "Serie A",
     "F1": "Ligue 1",
+    "N1": "Eredivisie",
+    "P1": "Primeira Liga",
+    "T1": "Süper Lig",
+    "B1": "Pro League",
+    "SC0": "Premiership",
+    "G1": "Super League Greece",
 }
 
 
@@ -84,6 +92,28 @@ def main(seasons: list[str]):
             for div in LEAGUES:
                 n = load_division(db, div, season)
                 print(f"Loaded {n} matches for {LEAGUES[div]} ({season})")
+    finally:
+        db.close()
+
+
+def load_missing_leagues(seasons: list[str]):
+    """Backfill historical data for any league in LEAGUES not yet present in the DB.
+
+    Safe to call on every startup against an already-seeded DB: leagues that
+    already have matches are skipped, so previously-loaded data is never
+    duplicated.
+    """
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        existing_leagues = {row[0] for row in db.query(Match.league).distinct().all()}
+        for season in seasons:
+            for div, league in LEAGUES.items():
+                if league in existing_leagues:
+                    continue
+                n = load_division(db, div, season)
+                print(f"Loaded {n} matches for {league} ({season})")
+                existing_leagues.add(league)
     finally:
         db.close()
 
