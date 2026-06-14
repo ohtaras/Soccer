@@ -40,6 +40,10 @@ ADDITIONAL_LEAGUES_BY_SEARCH = {
     "Georgia - Erovnuli Liga": ("Georgia", "Erovnuli Liga"),
     "Estonia - Regular Season": ("Estonia", "Meistriliiga"),
     "Latvia - Virsliga": ("Latvia", "Virsliga"),
+    "Iran - Azadegan League": ("Iran", "Azadegan League"),
+    "Tanzania - Premier League": ("Tanzania", "Premier League"),
+    "United States - MLS Next Pro": ("USA", "MLS Next Pro"),
+    "Brazil - Serie C": ("Brazil", "Serie C"),
 }
 
 
