@@ -60,9 +60,17 @@ function addDays(d, days) {
 function App() {
   const [selectedDate, setSelectedDate] = useState(() => new Date())
   const [fixtures, setFixtures] = useState([])
+  const [predictableLeagues, setPredictableLeagues] = useState(new Set())
   const [predictions, setPredictions] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API_URL}/predictions/leagues`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((leagues) => setPredictableLeagues(new Set(leagues)))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -87,13 +95,22 @@ function App() {
     })
     fetch(`${API_URL}/predictions?${params}`)
       .then((res) => {
-        if (res.status === 404) throw new Error('Δεν υπάρχουν ιστορικά δεδομένα για πρόβλεψη')
         if (!res.ok) throw new Error(`Failed to load prediction (${res.status})`)
         return res.json()
       })
       .then((data) => setPredictions((prev) => ({ ...prev, [index]: data })))
-      .catch((err) => setPredictions((prev) => ({ ...prev, [index]: { error: err.message } })))
+      .catch(() => setPredictions((prev) => ({ ...prev, [index]: { error: true } })))
   }
+
+  useEffect(() => {
+    if (predictableLeagues.size === 0) return
+    fixtures.forEach((fixture, index) => {
+      if (predictableLeagues.has(fixture.league)) {
+        loadPrediction(fixture, index)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fixtures, predictableLeagues])
 
   const groups = groupByLeague(fixtures)
 
@@ -151,12 +168,6 @@ function App() {
                     </span>
                   </div>
 
-                  {!prediction && (
-                    <button onClick={() => loadPrediction(fixture, index)}>Πρόβλεψη</button>
-                  )}
-                  {prediction && prediction.error && (
-                    <p className="error">{prediction.error}</p>
-                  )}
                   {prediction && !prediction.error && (
                     <div className="prediction">
                       <p>
