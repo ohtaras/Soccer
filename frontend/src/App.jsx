@@ -40,6 +40,7 @@ function App() {
   return (
     <main className="container">
       <h1>Αγώνες Ημέρας</h1>
+      <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις 1X2</p>
 
       {loading && <p>Φόρτωση...</p>}
       {error && <p className="error">Σφάλμα: {error}</p>}
