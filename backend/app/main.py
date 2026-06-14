@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,11 +24,7 @@ app.include_router(fixtures.router, prefix="/api")
 app.include_router(predictions.router, prefix="/api")
 
 
-@app.on_event("startup")
-def seed_historical_data():
-    """On first boot (empty DB), load historical results from football-data.co.uk."""
-    Base.metadata.create_all(bind=engine)
-
+def _seed_if_empty():
     db = SessionLocal()
     try:
         has_data = db.query(Match).first() is not None
@@ -41,6 +38,17 @@ def seed_historical_data():
         load_historical_data(["2324", "2425"])
     except Exception:
         logger.exception("Failed to load historical data on startup")
+
+
+@app.on_event("startup")
+def seed_historical_data():
+    """On first boot (empty DB), load historical results from football-data.co.uk.
+
+    Runs in a background thread so the API can start serving requests
+    (and pass health checks) immediately.
+    """
+    Base.metadata.create_all(bind=engine)
+    threading.Thread(target=_seed_if_empty, daemon=True).start()
 
 
 @app.get("/api/health")
