@@ -14,10 +14,10 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 from app.db.database import Base, SessionLocal, engine
 from app.db.models import Match
 from data.ingestion import live_football_data
-from data.ingestion.api_football_history import ADDITIONAL_LEAGUES
+from data.ingestion.api_football_history import ADDITIONAL_LEAGUES, ADDITIONAL_LEAGUES_BY_SEARCH
 from data.ingestion.csv_loader import LEAGUES, get_or_create_team
 
-TRACKED_LEAGUES = set(LEAGUES.values()) | set(ADDITIONAL_LEAGUES.values())
+TRACKED_LEAGUES = set(LEAGUES.values()) | set(ADDITIONAL_LEAGUES.values()) | set(ADDITIONAL_LEAGUES_BY_SEARCH.keys())
 
 
 def _season_for_date(d: date) -> str:
