@@ -16,31 +16,66 @@ from app.db.models import Match, Team
 BASE_URL = "https://www.football-data.co.uk/mmz4281/{season}/{div}.csv"
 
 # football-data.co.uk division codes -> readable league name
-# (must match the league names used in data/ingestion/fixtures.py)
+# Must match the "Country - League" names from data/ingestion/leagues_map.py,
+# so historical data lines up with fixtures from live_football_data.
 LEAGUES = {
-    "E0": "Premier League",
-    "E1": "Championship",
-    "E2": "League One",
-    "E3": "League Two",
-    "EC": "National League",
-    "SP1": "La Liga",
-    "SP2": "La Liga 2",
-    "D1": "Bundesliga",
-    "D2": "2. Bundesliga",
-    "I1": "Serie A",
-    "I2": "Serie B",
-    "F1": "Ligue 1",
-    "F2": "Ligue 2",
-    "N1": "Eredivisie",
-    "P1": "Primeira Liga",
-    "T1": "Süper Lig",
-    "B1": "Pro League",
-    "SC0": "Premiership",
-    "SC1": "Scottish Championship",
-    "SC2": "Scottish League One",
-    "SC3": "Scottish League Two",
-    "G1": "Super League Greece",
+    "E0": "England - Premier League",
+    "E1": "England - Championship",
+    "E2": "England - League One",
+    "E3": "England - League Two",
+    "EC": "England - National League",
+    "SP1": "Spain - LaLiga",
+    "SP2": "Spain - LaLiga2",
+    "D1": "Germany - Bundesliga",
+    "D2": "Germany - 2. Bundesliga",
+    "I1": "Italy - Serie A",
+    "I2": "Italy - Serie B",
+    "F1": "France - Ligue 1",
+    "F2": "France - Ligue 2",
+    "N1": "Netherlands - Eredivisie",
+    "P1": "Portugal - Liga Portugal",
+    "T1": "Turkiye - Süper Lig",
+    "B1": "Belgium - First Division A",
+    "SC0": "Scotland - Premiership",
+    "SC1": "Scotland - Championship",
+    "SC2": "Scotland - League One",
+    "SC3": "Scotland - League Two",
+    "G1": "Greece - Super League 1",
 }
+
+# Previous (pre-country-prefix) names, for renaming rows from older deployments.
+LEGACY_LEAGUE_NAMES = {
+    "Premier League": "England - Premier League",
+    "Championship": "England - Championship",
+    "League One": "England - League One",
+    "League Two": "England - League Two",
+    "National League": "England - National League",
+    "La Liga": "Spain - LaLiga",
+    "La Liga 2": "Spain - LaLiga2",
+    "Bundesliga": "Germany - Bundesliga",
+    "2. Bundesliga": "Germany - 2. Bundesliga",
+    "Serie A": "Italy - Serie A",
+    "Serie B": "Italy - Serie B",
+    "Ligue 1": "France - Ligue 1",
+    "Ligue 2": "France - Ligue 2",
+    "Eredivisie": "Netherlands - Eredivisie",
+    "Primeira Liga": "Portugal - Liga Portugal",
+    "Süper Lig": "Turkiye - Süper Lig",
+    "Pro League": "Belgium - First Division A",
+    "Premiership": "Scotland - Premiership",
+    "Scottish Championship": "Scotland - Championship",
+    "Scottish League One": "Scotland - League One",
+    "Scottish League Two": "Scotland - League Two",
+    "Super League Greece": "Greece - Super League 1",
+}
+
+
+def _rename_legacy_leagues(db) -> None:
+    """Renames league labels from older deployments to the current "Country - League" format."""
+    for old_name, new_name in LEGACY_LEAGUE_NAMES.items():
+        db.query(Match).filter(Match.league == old_name).update({Match.league: new_name})
+        db.query(Team).filter(Team.league == old_name).update({Team.league: new_name})
+    db.commit()
 
 
 def _parse_date(value: str) -> datetime.date:
@@ -116,6 +151,7 @@ def load_missing_leagues(seasons: list[str]):
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
+        _rename_legacy_leagues(db)
         existing_leagues = {row[0] for row in db.query(Match.league).distinct().all()}
         for season in seasons:
             for div, league in LEAGUES.items():
