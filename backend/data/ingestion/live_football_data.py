@@ -44,8 +44,40 @@ def get_raw_matches_by_date(day: date | None = None) -> dict:
     return data
 
 
+def _status_to_state(status: dict) -> str:
+    if status.get("finished"):
+        return "post"
+    if status.get("started"):
+        return "in"
+    return "pre"
+
+
 def get_fixtures_for_day(day: date | None = None) -> list[dict]:
-    raise NotImplementedError("Need a sample response before this can be implemented")
+    data = get_raw_matches_by_date(day)
+
+    fixtures = []
+    for match in data.get("response", {}).get("matches", []):
+        status = match.get("status", {})
+        if status.get("cancelled"):
+            continue
+
+        state = _status_to_state(status)
+        home = match["home"]
+        away = match["away"]
+
+        fixtures.append(
+            {
+                "league": f"League {match['leagueId']}",
+                "date": status.get("utcTime"),
+                "status": state,
+                "home_team": home["name"],
+                "away_team": away["name"],
+                "home_score": home.get("score") if state != "pre" else None,
+                "away_score": away.get("score") if state != "pre" else None,
+            }
+        )
+
+    return fixtures
 
 
 if __name__ == "__main__":
