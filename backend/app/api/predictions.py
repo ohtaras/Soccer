@@ -82,11 +82,11 @@ def _save_prediction(db: Session, match_id: int, result: dict) -> None:
         prediction = Prediction(match_id=match_id)
         db.add(prediction)
 
-    prediction.home_win_prob = result["home_win_prob"]
-    prediction.draw_prob = result["draw_prob"]
-    prediction.away_win_prob = result["away_win_prob"]
-    prediction.predicted_home_goals = result["expected_home_goals"]
-    prediction.predicted_away_goals = result["expected_away_goals"]
+    prediction.home_win_prob = float(result["home_win_prob"])
+    prediction.draw_prob = float(result["draw_prob"])
+    prediction.away_win_prob = float(result["away_win_prob"])
+    prediction.predicted_home_goals = float(result["expected_home_goals"])
+    prediction.predicted_away_goals = float(result["expected_away_goals"])
 
     db.commit()
 
