@@ -20,6 +20,7 @@ from data.ingestion.csv_loader import get_or_create_team
 
 API_HOST = "api-football-v1.p.rapidapi.com"
 FIXTURES_URL = f"https://{API_HOST}/v3/fixtures"
+LEAGUES_URL = f"https://{API_HOST}/v3/leagues"
 
 # API-Football league ID -> "Country - League" name (must match leagues_map.py)
 ADDITIONAL_LEAGUES = {
@@ -29,9 +30,41 @@ ADDITIONAL_LEAGUES = {
     253: "United States - MLS",
 }
 
+# "Country - League" name (must match leagues_map.py) -> (country, search term)
+# used to look up the API-Football league ID by name, since it isn't known upfront.
+ADDITIONAL_LEAGUES_BY_SEARCH = {
+    "Brazil - Serie B": ("Brazil", "Serie B"),
+    "Iceland - 1. Deild": ("Iceland", "1. Deild"),
+    "Lithuania - Toplyga": ("Lithuania", "A Lyga"),
+    "Morocco - Botola Pro": ("Morocco", "Botola Pro"),
+    "Georgia - Erovnuli Liga": ("Georgia", "Erovnuli Liga"),
+    "Estonia - Regular Season": ("Estonia", "Meistriliiga"),
+    "Latvia - Virsliga": ("Latvia", "Virsliga"),
+}
+
 
 def is_configured() -> bool:
     return bool(os.environ.get("RAPIDAPI_KEY"))
+
+
+def resolve_league_id(country: str, name_search: str) -> int | None:
+    """Looks up an API-Football league ID by country and (fuzzy) name."""
+    api_key = os.environ["RAPIDAPI_KEY"]
+    response = requests.get(
+        LEAGUES_URL,
+        params={"country": country, "search": name_search},
+        headers={"x-rapidapi-key": api_key, "x-rapidapi-host": API_HOST},
+        timeout=30,
+    )
+    response.raise_for_status()
+    results = response.json().get("response", [])
+    if not results:
+        return None
+
+    for item in results:
+        if item["league"]["name"].lower() == name_search.lower():
+            return item["league"]["id"]
+    return results[0]["league"]["id"]
 
 
 def fetch_finished_fixtures(league_id: int, season: str) -> list[dict]:
@@ -88,6 +121,19 @@ def load_missing_leagues(seasons: list[str]) -> None:
         existing_leagues = {row[0] for row in db.query(Match.league).distinct().all()}
         for league_id, league_name in ADDITIONAL_LEAGUES.items():
             if league_name in existing_leagues:
+                continue
+            total = 0
+            for season in seasons:
+                total += load_league_season(db, league_id, league_name, season)
+            print(f"Loaded {total} matches for {league_name}")
+            existing_leagues.add(league_name)
+
+        for league_name, (country, search) in ADDITIONAL_LEAGUES_BY_SEARCH.items():
+            if league_name in existing_leagues:
+                continue
+            league_id = resolve_league_id(country, search)
+            if league_id is None:
+                print(f"Could not resolve league ID for {league_name}")
                 continue
             total = 0
             for season in seasons:
