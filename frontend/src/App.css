@@ -16,6 +16,33 @@
   color: #c0392b;
 }
 
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.date-nav button {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.date-nav button:hover {
+  background: #f5f5f5;
+}
+
+.date-label {
+  font-weight: 600;
+  min-width: 9rem;
+  text-align: center;
+}
+
 .league-group {
   margin-bottom: 1.5rem;
   border: 1px solid #ddd;

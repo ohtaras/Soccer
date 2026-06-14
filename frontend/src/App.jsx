@@ -44,14 +44,31 @@ function groupByLeague(fixtures) {
   return groups
 }
 
+function toDateInputValue(d) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function addDays(d, days) {
+  const result = new Date(d)
+  result.setDate(result.getDate() + days)
+  return result
+}
+
 function App() {
+  const [selectedDate, setSelectedDate] = useState(() => new Date())
   const [fixtures, setFixtures] = useState([])
   const [predictions, setPredictions] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch(`${API_URL}/fixtures/today`)
+    setLoading(true)
+    setError(null)
+    setPredictions({})
+    fetch(`${API_URL}/fixtures/today?date=${toDateInputValue(selectedDate)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load fixtures (${res.status})`)
         return res.json()
@@ -59,7 +76,7 @@ function App() {
       .then((data) => setFixtures(data.fixtures))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [selectedDate])
 
   const loadPrediction = (fixture, index) => {
     const params = new URLSearchParams({
@@ -80,15 +97,28 @@ function App() {
 
   const groups = groupByLeague(fixtures)
 
+  const isToday = toDateInputValue(selectedDate) === toDateInputValue(new Date())
+  const dateLabel = selectedDate.toLocaleDateString('el-GR', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+
   return (
     <main className="container">
       <h1>Αγώνες Ημέρας</h1>
       <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις 1X2</p>
 
+      <div className="date-nav">
+        <button onClick={() => setSelectedDate((d) => addDays(d, -1))}>‹ Χθες</button>
+        <span className="date-label">{isToday ? `Σήμερα, ${dateLabel}` : dateLabel}</span>
+        <button onClick={() => setSelectedDate((d) => addDays(d, 1))}>Αύριο ›</button>
+      </div>
+
       {loading && <p>Φόρτωση...</p>}
       {error && <p className="error">Σφάλμα: {error}</p>}
 
-      {!loading && !error && fixtures.length === 0 && <p>Δεν υπάρχουν αγώνες σήμερα.</p>}
+      {!loading && !error && fixtures.length === 0 && <p>Δεν υπάρχουν αγώνες αυτή την ημέρα.</p>}
 
       {groups.map((group) => (
         <section className="league-group" key={group.league}>
