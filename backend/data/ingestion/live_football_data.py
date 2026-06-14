@@ -76,8 +76,11 @@ def get_fixtures_for_day(day: date | None = None) -> list[dict]:
                 "league": league_name,
                 "date": status.get("utcTime"),
                 "status": state,
+                "minute": status.get("liveTime", {}).get("short") if state == "in" else None,
                 "home_team": home["name"],
                 "away_team": away["name"],
+                "home_team_id": home.get("id"),
+                "away_team_id": away.get("id"),
                 "home_score": home.get("score") if state != "pre" else None,
                 "away_score": away.get("score") if state != "pre" else None,
             }

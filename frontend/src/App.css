@@ -32,6 +32,10 @@
   padding: 0.5rem 0.75rem;
 }
 
+.flag {
+  margin-right: 0.35rem;
+}
+
 .fixtures {
   list-style: none;
   padding: 0;
@@ -74,14 +78,35 @@
 .team {
   font-weight: 600;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-logo, .team-logo-placeholder {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .home-team {
+  justify-content: flex-end;
+}
+
+.home-team .team-name {
   text-align: right;
 }
 
 .away-team {
-  text-align: left;
+  justify-content: flex-start;
 }
 
 .score {
