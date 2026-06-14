@@ -25,9 +25,11 @@ function App() {
       home_team: fixture.home_team,
       away_team: fixture.away_team,
       league: fixture.league,
+      date: fixture.date,
     })
     fetch(`${API_URL}/predictions?${params}`)
       .then((res) => {
+        if (res.status === 404) throw new Error('Δεν υπάρχουν ιστορικά δεδομένα για πρόβλεψη')
         if (!res.ok) throw new Error(`Failed to load prediction (${res.status})`)
         return res.json()
       })
@@ -38,6 +40,7 @@ function App() {
   return (
     <main className="container">
       <h1>Αγώνες Ημέρας</h1>
+      <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις 1X2</p>
 
       {loading && <p>Φόρτωση...</p>}
       {error && <p className="error">Σφάλμα: {error}</p>}

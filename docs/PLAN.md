@@ -6,16 +6,24 @@
 
 ## Πηγές δεδομένων
 - **Ιστορικά αποτελέσματα**: CSV από [football-data.co.uk](https://www.football-data.co.uk)
-  (top-5 ευρωπαϊκές λίγκες, χωρίς API key) — `backend/data/ingestion/csv_loader.py`
-- **Αγώνες ημέρας**: ESPN public scoreboard JSON endpoint (χωρίς API key) —
-  `backend/data/ingestion/fixtures.py`
+  (top-5 ευρωπαϊκές λίγκες + αντίστοιχες 2η/3η/4η κατηγορίες (Championship,
+  League One/Two, National League, 2. Bundesliga, Serie B, La Liga 2, Ligue 2,
+  Scottish Championship/League One/Two), Eredivisie, Primeira Liga, Süper Lig,
+  Pro League, Ελληνική Super League, χωρίς API key) —
+  `backend/data/ingestion/csv_loader.py`
+- **Αγώνες ημέρας**: ESPN public scoreboard JSON endpoint (χωρίς API key),
+  κάλυψη όλων των παραπάνω λιγκών + UEFA Champions League/Europa
+  League/Conference League, FIFA World Cup, και πολλές εκτός Ευρώπης λίγκες
+  (MLS, Liga MX, Brasileirão, Αργεντινή Primera/Nacional B/Primera B/Primera
+  C, Βολιβία, Χιλή, Saudi Pro League, J1 League — μόνο για εμφάνιση αγώνων,
+  χωρίς ιστορικά δεδομένα ακόμα) — `backend/data/ingestion/fixtures.py`
 - **Μελλοντικά**: δυνατότητα προσθήκης API key (π.χ. API-Football) για live
   ενημερώσεις/odds.
 
 ## Αρχιτεκτονική
 ```
 backend/
-  app/            FastAPI app (routes: /fixtures/today, /predictions)
+  app/            FastAPI app (routes: /fixtures/today, /predictions, /predictions/history)
   data/ingestion/ scripts λήψης δεδομένων
   ml/             prediction models (baseline: Poisson)
 frontend/         React + Vite dashboard
@@ -27,8 +35,14 @@ frontend/         React + Vite dashboard
 3. ✅ Fixtures ημέρας από ESPN scoreboard
 4. ✅ Baseline Poisson model για πρόβλεψη 1X2 + αναμενόμενα γκολ
 5. ✅ React dashboard: λίστα αγώνων ημέρας + κουμπί πρόβλεψης
-6. Επόμενα βήματα:
+6. ✅ Αποθήκευση προβλέψεων στη DB (πίνακας `predictions`, endpoint `/predictions/history`)
+7. ✅ Εμπλουτισμός κάλυψης λιγκών (περισσότερες ευρωπαϊκές λίγκες + κατώτερες
+   κατηγορίες, UEFA κύπελλα, FIFA World Cup, βασικές εκτός Ευρώπης λίγκες) για
+   να υπάρχουν περισσότεροι αγώνες κάθε μέρα. Backfill ιστορικών δεδομένων για
+   νέες λίγκες τρέχει αυτόματα στο startup (`load_missing_leagues`), χωρίς να
+   ξαναφορτώνει ήδη υπάρχουσες λίγκες.
+8. Επόμενα βήματα:
    - Αυτοματοποιημένο ETL (cron/scheduled job) για ανανέωση ιστορικών δεδομένων
-   - Αποθήκευση προβλέψεων στη DB (πίνακας `predictions`)
    - Βελτίωση μοντέλου (form, head-to-head, injuries)
-   - Προσθήκη ελληνικής Super League σε ιστορικά δεδομένα όταν βρεθεί πηγή
+   - Ιστορικά δεδομένα για UEFA κύπελλα / World Cup / εκτός Ευρώπης λίγκες
+     (MLS, Liga MX, Brasileirão κ.λπ.) ώστε να υπάρχουν προβλέψεις και εκεί
