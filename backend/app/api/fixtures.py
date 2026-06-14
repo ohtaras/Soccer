@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from data.ingestion import api_football, live_football_data
 from data.ingestion.fixtures import get_fixtures_for_day
@@ -12,27 +12,29 @@ router = APIRouter()
 
 
 @router.get("/fixtures/today")
-def fixtures_today():
+def fixtures_today(date_str: str | None = Query(None, alias="date")):
+    day = date.fromisoformat(date_str) if date_str else date.today()
+
     fixtures = None
 
     if live_football_data.is_configured():
         try:
-            fixtures = live_football_data.get_fixtures_for_day()
+            fixtures = live_football_data.get_fixtures_for_day(day)
         except Exception:
             logger.exception("Free API Live Football Data fetch failed, trying next source")
             fixtures = None
 
     if fixtures is None and api_football.is_configured():
         try:
-            fixtures = api_football.get_fixtures_for_day()
+            fixtures = api_football.get_fixtures_for_day(day)
         except Exception:
             logger.exception("API-Football fetch failed, falling back to ESPN")
             fixtures = None
 
     if fixtures is None:
-        fixtures = get_fixtures_for_day()
+        fixtures = get_fixtures_for_day(day)
 
-    return {"date": date.today().isoformat(), "fixtures": fixtures}
+    return {"date": day.isoformat(), "fixtures": fixtures}
 
 
 @router.get("/debug/live-football-data-raw")
