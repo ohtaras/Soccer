@@ -29,6 +29,7 @@ function App() {
     })
     fetch(`${API_URL}/predictions?${params}`)
       .then((res) => {
+        if (res.status === 404) throw new Error('Δεν υπάρχουν ιστορικά δεδομένα για πρόβλεψη')
         if (!res.ok) throw new Error(`Failed to load prediction (${res.status})`)
         return res.json()
       })
