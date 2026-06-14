@@ -15,7 +15,7 @@
 ## Αρχιτεκτονική
 ```
 backend/
-  app/            FastAPI app (routes: /fixtures/today, /predictions)
+  app/            FastAPI app (routes: /fixtures/today, /predictions, /predictions/history)
   data/ingestion/ scripts λήψης δεδομένων
   ml/             prediction models (baseline: Poisson)
 frontend/         React + Vite dashboard
@@ -27,8 +27,8 @@ frontend/         React + Vite dashboard
 3. ✅ Fixtures ημέρας από ESPN scoreboard
 4. ✅ Baseline Poisson model για πρόβλεψη 1X2 + αναμενόμενα γκολ
 5. ✅ React dashboard: λίστα αγώνων ημέρας + κουμπί πρόβλεψης
-6. Επόμενα βήματα:
+6. ✅ Αποθήκευση προβλέψεων στη DB (πίνακας `predictions`, endpoint `/predictions/history`)
+7. Επόμενα βήματα:
    - Αυτοματοποιημένο ETL (cron/scheduled job) για ανανέωση ιστορικών δεδομένων
-   - Αποθήκευση προβλέψεων στη DB (πίνακας `predictions`)
    - Βελτίωση μοντέλου (form, head-to-head, injuries)
    - Προσθήκη ελληνικής Super League σε ιστορικά δεδομένα όταν βρεθεί πηγή

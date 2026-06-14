@@ -25,6 +25,7 @@ function App() {
       home_team: fixture.home_team,
       away_team: fixture.away_team,
       league: fixture.league,
+      date: fixture.date,
     })
     fetch(`${API_URL}/predictions?${params}`)
       .then((res) => {
