@@ -113,6 +113,13 @@ def predict_match(
     return result
 
 
+@router.get("/predictions/leagues")
+def predictions_leagues(db: Session = Depends(get_db)):
+    """Returns the list of leagues we have historical data for (and can predict)."""
+    rows = db.query(Match.league).distinct().all()
+    return sorted(row[0] for row in rows)
+
+
 @router.get("/predictions/history")
 def predictions_history(db: Session = Depends(get_db)):
     rows = (
