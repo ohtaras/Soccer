@@ -3,7 +3,7 @@ from datetime import date
 
 from fastapi import APIRouter
 
-from data.ingestion import api_football
+from data.ingestion import api_football, live_football_data
 from data.ingestion.fixtures import get_fixtures_for_day
 
 logger = logging.getLogger(__name__)
@@ -25,3 +25,11 @@ def fixtures_today():
         fixtures = get_fixtures_for_day()
 
     return {"date": date.today().isoformat(), "fixtures": fixtures}
+
+
+@router.get("/debug/live-football-data-raw")
+def debug_live_football_data_raw():
+    """Temporary debug endpoint to inspect the raw API response shape."""
+    if not live_football_data.is_configured():
+        return {"error": "RAPIDAPI_KEY not set"}
+    return live_football_data.get_raw_matches_by_date()
