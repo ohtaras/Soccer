@@ -64,7 +64,10 @@ def get_fixtures_for_day(day: date | None = None) -> list[dict]:
             continue
 
         for event in data.get("events", []):
-            competition = event["competitions"][0]
+            competitions = event.get("competitions")
+            if not competitions:
+                continue
+            competition = competitions[0]
             competitors = competition["competitors"]
             home = next(c for c in competitors if c["homeAway"] == "home")
             away = next(c for c in competitors if c["homeAway"] == "away")
