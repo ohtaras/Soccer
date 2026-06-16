@@ -7,6 +7,9 @@ model's training data keeps growing as each season progresses.
 
 import sys
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
+
+_TZ = ZoneInfo("Europe/Athens")
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
@@ -33,7 +36,7 @@ def sync_finished_matches(target_day: date | None = None) -> int:
     if not live_football_data.is_configured():
         return 0
 
-    target_day = target_day or (date.today() - timedelta(days=1))
+    target_day = target_day or (datetime.now(_TZ).date() - timedelta(days=1))
     fixtures = live_football_data.get_fixtures_for_day(target_day)
 
     Base.metadata.create_all(bind=engine)
@@ -51,7 +54,7 @@ def sync_finished_matches(target_day: date | None = None) -> int:
 
             home = get_or_create_team(db, fixture["home_team"], league)
             away = get_or_create_team(db, fixture["away_team"], league)
-            match_date = datetime.fromisoformat(fixture["date"].replace("Z", "+00:00")).date()
+            match_date = datetime.fromisoformat(fixture["date"].replace("Z", "+00:00")).astimezone(_TZ).date()
 
             match = (
                 db.query(Match)
