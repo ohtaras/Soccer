@@ -66,11 +66,11 @@ function App() {
   const [winRate, setWinRate] = useState(null)
 
   useEffect(() => {
-    fetch(`${API_URL}/stats/winrate`)
+    fetch(`${API_URL}/stats/winrate?date=${toDateInputValue(selectedDate)}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => setWinRate(data))
       .catch(() => {})
-  }, [])
+  }, [selectedDate])
 
   useEffect(() => {
     fetch(`${API_URL}/predictions/leagues`)
@@ -147,8 +147,8 @@ function App() {
       <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις</p>
       {winRate && winRate.total > 0 && (
         <p className="winrate">
-          Ακρίβεια 1X2: <strong>{winRate.win_rate}%</strong>
-          <span className="winrate-detail"> ({winRate.correct}/{winRate.total} αγώνες)</span>
+          Ακρίβεια ημέρας: <strong>{winRate.win_rate}%</strong>
+          <span className="winrate-detail"> ({winRate.correct}/{winRate.total} προβλέψεις)</span>
         </p>
       )}
 

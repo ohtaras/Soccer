@@ -1,7 +1,8 @@
 from datetime import date as date_cls, datetime
+import math
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -125,27 +126,61 @@ def predictions_leagues(db: Session = Depends(get_db)):
 
 
 @router.get("/stats/winrate")
-def prediction_winrate(db: Session = Depends(get_db)):
-    """Returns 1X2 prediction accuracy for all completed matches with stored predictions."""
-    rows = (
+def prediction_winrate(date: str | None = Query(None), db: Session = Depends(get_db)):
+    """Best-bet prediction accuracy. Pass ?date=YYYY-MM-DD for a specific day."""
+
+    def _poisson_pmf(k: int, lam: float) -> float:
+        return math.exp(-lam) * (lam ** k) / math.factorial(k)
+
+    query = (
         db.query(Prediction, Match)
         .join(Match, Prediction.match_id == Match.id)
         .filter(Match.home_goals.isnot(None), Match.away_goals.isnot(None))
-        .all()
     )
+    if date:
+        query = query.filter(Match.date == date_cls.fromisoformat(date))
 
+    rows = query.all()
     total = correct = 0
+
     for pred, match in rows:
-        probs = {"1": pred.home_win_prob, "X": pred.draw_prob, "2": pred.away_win_prob}
-        predicted = max(probs, key=probs.get)
-        if match.home_goals > match.away_goals:
-            actual = "1"
-        elif match.home_goals == match.away_goals:
-            actual = "X"
-        else:
-            actual = "2"
+        lh = pred.predicted_home_goals or 1.0
+        la = pred.predicted_away_goals or 1.0
+
+        gg = (1 - math.exp(-lh)) * (1 - math.exp(-la))
+        under_25 = sum(
+            _poisson_pmf(h, lh) * _poisson_pmf(a, la)
+            for h in range(3) for a in range(3) if h + a <= 2
+        )
+        under_15 = (
+            _poisson_pmf(0, lh) * _poisson_pmf(0, la) +
+            _poisson_pmf(1, lh) * _poisson_pmf(0, la) +
+            _poisson_pmf(0, lh) * _poisson_pmf(1, la)
+        )
+
+        markets = {
+            "1": pred.home_win_prob,
+            "X": pred.draw_prob,
+            "2": pred.away_win_prob,
+            "GG": gg,
+            "NG": 1 - gg,
+            "Over 2.5": 1 - under_25,
+            "Under 2.5": under_25,
+            "Over 1.5": 1 - under_15,
+            "Under 1.5": under_15,
+        }
+        best = max(markets, key=markets.get)
+
+        hg, ag = match.home_goals, match.away_goals
+        outcomes = {
+            "1": hg > ag, "X": hg == ag, "2": hg < ag,
+            "GG": hg >= 1 and ag >= 1, "NG": not (hg >= 1 and ag >= 1),
+            "Over 2.5": hg + ag >= 3, "Under 2.5": hg + ag <= 2,
+            "Over 1.5": hg + ag >= 2, "Under 1.5": hg + ag <= 1,
+        }
+
         total += 1
-        if predicted == actual:
+        if outcomes.get(best):
             correct += 1
 
     return {
