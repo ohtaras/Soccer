@@ -51,8 +51,8 @@ class PoissonModel:
         home = self.strengths.get(home_team, TeamStrength(1.0, 1.0))
         away = self.strengths.get(away_team, TeamStrength(1.0, 1.0))
 
-        expected_home_goals = self.league_avg_home_goals * home.attack * away.defense
-        expected_away_goals = self.league_avg_away_goals * away.attack * home.defense
+        expected_home_goals = max(self.league_avg_home_goals * home.attack * away.defense, 0.3)
+        expected_away_goals = max(self.league_avg_away_goals * away.attack * home.defense, 0.3)
 
         home_win = draw = away_win = 0.0
         both_score = over_25 = over_15 = 0.0
