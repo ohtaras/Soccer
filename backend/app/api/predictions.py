@@ -11,13 +11,16 @@ from ml.poisson_model import PoissonModel
 router = APIRouter()
 
 
-def _matches_dataframe(db: Session, league: str) -> pd.DataFrame:
-    rows = (
+def _matches_dataframe(db: Session, league: str, before_date: date_cls | None = None) -> pd.DataFrame:
+    query = (
         db.query(Match, Team.name.label("home_name"))
         .join(Team, Match.home_team_id == Team.id)
         .filter(Match.league == league)
-        .all()
+        .filter(Match.home_goals.isnot(None))
     )
+    if before_date is not None:
+        query = query.filter(Match.date < before_date)
+    rows = query.all()
 
     home_team_id = {t.id: t.name for t in db.query(Team).all()}
 
@@ -99,7 +102,8 @@ def predict_match(
     date: str | None = None,
     db: Session = Depends(get_db),
 ):
-    df = _matches_dataframe(db, league)
+    match_date = _parse_fixture_date(date)
+    df = _matches_dataframe(db, league, before_date=match_date)
     if df.empty:
         raise HTTPException(status_code=404, detail=f"No historical data for league '{league}'")
 
@@ -107,7 +111,7 @@ def predict_match(
     model.fit(df)
     result = model.predict(home_team, away_team)
 
-    match = _get_or_create_match(db, league, home_team, away_team, _parse_fixture_date(date))
+    match = _get_or_create_match(db, league, home_team, away_team, match_date)
     _save_prediction(db, match.id, result)
 
     return result
