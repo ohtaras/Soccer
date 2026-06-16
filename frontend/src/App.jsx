@@ -123,8 +123,20 @@ function App() {
 
   return (
     <main className="container">
-      <h1>Αγώνες Ημέρας</h1>
-      <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις 1X2</p>
+      <div className="app-logo">
+        <svg viewBox="0 0 100 100" className="logo-ball" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="46" fill="#f0f0f0" stroke="#1e293b" strokeWidth="3"/>
+          <polygon points="50,30 63,40 58,55 42,55 37,40" fill="#1e293b"/>
+          <polygon points="62,14 76,18 82,32 68,40 63,28" fill="#1e293b"/>
+          <polygon points="26,58 42,55 37,40 18,32 14,48" fill="#1e293b"/>
+          <polygon points="74,58 58,55 68,40 82,32 86,48" fill="#f0f0f0" stroke="#1e293b" strokeWidth="1.5"/>
+          <polygon points="50,4 62,14 63,28 50,30 37,28 38,14" fill="#f0f0f0" stroke="#1e293b" strokeWidth="1.5"/>
+          <polygon points="18,32 24,18 38,14 37,28 32,28" fill="#f0f0f0" stroke="#1e293b" strokeWidth="1.5"/>
+          <polygon points="26,58 30,72 44,78 56,78 70,72 74,58 58,55 42,55" fill="#1e293b"/>
+        </svg>
+        <h1>Μαλακίες του Σπύρου</h1>
+      </div>
+      <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις</p>
 
       <div className="date-nav">
         <button onClick={() => setSelectedDate((d) => addDays(d, -1))}>‹ Χθες</button>
