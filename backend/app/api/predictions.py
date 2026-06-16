@@ -1,5 +1,8 @@
 from datetime import date as date_cls, datetime
 import math
+from zoneinfo import ZoneInfo
+
+_TZ = ZoneInfo("Europe/Athens")
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -40,8 +43,8 @@ def _matches_dataframe(db: Session, league: str, before_date: date_cls | None = 
 
 def _parse_fixture_date(value: str | None) -> date_cls:
     if not value:
-        return date_cls.today()
-    return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
+        return datetime.now(_TZ).date()
+    return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(_TZ).date()
 
 
 def _season_for_date(d: date_cls) -> str:
