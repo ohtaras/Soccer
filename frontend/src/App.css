@@ -32,8 +32,23 @@ h1 {
 .subtitle {
   text-align: center;
   color: #64748b;
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.4rem;
   font-size: 0.85rem;
+}
+
+.winrate {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #475569;
+  margin: 0 0 1.1rem;
+}
+
+.winrate strong {
+  color: #4ade80;
+}
+
+.winrate-detail {
+  color: #334155;
 }
 
 .error {

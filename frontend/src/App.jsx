@@ -63,6 +63,14 @@ function App() {
   const [predictions, setPredictions] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [winRate, setWinRate] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API_URL}/stats/winrate`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setWinRate(data))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch(`${API_URL}/predictions/leagues`)
@@ -137,6 +145,12 @@ function App() {
         <h1>Μαλακίες του Σπύρου</h1>
       </div>
       <p className="subtitle">Live αποτελέσματα &amp; προβλέψεις</p>
+      {winRate && winRate.total > 0 && (
+        <p className="winrate">
+          Ακρίβεια 1X2: <strong>{winRate.win_rate}%</strong>
+          <span className="winrate-detail"> ({winRate.correct}/{winRate.total} αγώνες)</span>
+        </p>
+      )}
 
       <div className="date-nav">
         <button onClick={() => setSelectedDate((d) => addDays(d, -1))}>‹ Χθες</button>

@@ -124,6 +124,37 @@ def predictions_leagues(db: Session = Depends(get_db)):
     return sorted(row[0] for row in rows)
 
 
+@router.get("/stats/winrate")
+def prediction_winrate(db: Session = Depends(get_db)):
+    """Returns 1X2 prediction accuracy for all completed matches with stored predictions."""
+    rows = (
+        db.query(Prediction, Match)
+        .join(Match, Prediction.match_id == Match.id)
+        .filter(Match.home_goals.isnot(None), Match.away_goals.isnot(None))
+        .all()
+    )
+
+    total = correct = 0
+    for pred, match in rows:
+        probs = {"1": pred.home_win_prob, "X": pred.draw_prob, "2": pred.away_win_prob}
+        predicted = max(probs, key=probs.get)
+        if match.home_goals > match.away_goals:
+            actual = "1"
+        elif match.home_goals == match.away_goals:
+            actual = "X"
+        else:
+            actual = "2"
+        total += 1
+        if predicted == actual:
+            correct += 1
+
+    return {
+        "total": total,
+        "correct": correct,
+        "win_rate": round(correct / total * 100, 1) if total else None,
+    }
+
+
 @router.get("/predictions/history")
 def predictions_history(db: Session = Depends(get_db)):
     rows = (
