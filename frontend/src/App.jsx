@@ -170,15 +170,27 @@ function App() {
 
                   {prediction && !prediction.error && (
                     <div className="prediction">
-                      <p>
-                        Αναμενόμενο σκορ: {prediction.expected_home_goals.toFixed(2)} -{' '}
-                        {prediction.expected_away_goals.toFixed(2)}
+                      <p className="pred-goals">
+                        Αναμ. σκορ: {prediction.expected_home_goals.toFixed(2)} – {prediction.expected_away_goals.toFixed(2)}
                       </p>
-                      <p>
-                        1: {(prediction.home_win_prob * 100).toFixed(1)}% | X:{' '}
-                        {(prediction.draw_prob * 100).toFixed(1)}% | 2:{' '}
-                        {(prediction.away_win_prob * 100).toFixed(1)}%
+                      <p className="pred-1x2">
+                        1: {(prediction.home_win_prob * 100).toFixed(1)}% &nbsp;|&nbsp;
+                        X: {(prediction.draw_prob * 100).toFixed(1)}% &nbsp;|&nbsp;
+                        2: {(prediction.away_win_prob * 100).toFixed(1)}%
                       </p>
+                      <p className="pred-markets">
+                        GG: {(prediction.both_teams_score_prob * 100).toFixed(1)}% &nbsp;|&nbsp;
+                        Over 2.5: {(prediction.over_25_prob * 100).toFixed(1)}% &nbsp;|&nbsp;
+                        Over 1.5: {(prediction.over_15_prob * 100).toFixed(1)}%
+                      </p>
+                      {prediction.best_bet && (
+                        <p className="pred-best">
+                          ★ {prediction.best_bet.market} &nbsp;
+                          <span className="pred-best-prob">
+                            {(prediction.best_bet.probability * 100).toFixed(1)}%
+                          </span>
+                        </p>
+                      )}
                     </div>
                   )}
                 </li>

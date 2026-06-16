@@ -55,6 +55,8 @@ class PoissonModel:
         expected_away_goals = self.league_avg_away_goals * away.attack * home.defense
 
         home_win = draw = away_win = 0.0
+        both_score = over_25 = over_15 = 0.0
+
         for i in range(self.MAX_GOALS):
             for j in range(self.MAX_GOALS):
                 p = poisson.pmf(i, expected_home_goals) * poisson.pmf(j, expected_away_goals)
@@ -64,6 +66,25 @@ class PoissonModel:
                     draw += p
                 else:
                     away_win += p
+                if i >= 1 and j >= 1:
+                    both_score += p
+                if i + j >= 3:
+                    over_25 += p
+                if i + j >= 2:
+                    over_15 += p
+
+        markets = {
+            "1": home_win,
+            "X": draw,
+            "2": away_win,
+            "GG": both_score,
+            "NG": 1 - both_score,
+            "Over 2.5": over_25,
+            "Under 2.5": 1 - over_25,
+            "Over 1.5": over_15,
+            "Under 1.5": 1 - over_15,
+        }
+        best_market, best_prob = max(markets.items(), key=lambda x: x[1])
 
         return {
             "expected_home_goals": expected_home_goals,
@@ -71,4 +92,8 @@ class PoissonModel:
             "home_win_prob": home_win,
             "draw_prob": draw,
             "away_win_prob": away_win,
+            "both_teams_score_prob": both_score,
+            "over_25_prob": over_25,
+            "over_15_prob": over_15,
+            "best_bet": {"market": best_market, "probability": best_prob},
         }

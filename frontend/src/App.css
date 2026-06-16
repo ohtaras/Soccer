@@ -187,13 +187,13 @@ h1 {
 /* ── Prediction bar ── */
 .prediction {
   margin-top: 0.4rem;
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.6rem;
   background: #0f172a;
   border-radius: 5px;
   font-size: 0.78rem;
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .prediction p {
@@ -201,6 +201,31 @@ h1 {
   color: #94a3b8;
 }
 
-.prediction p:first-child {
-  color: #64748b;
+.pred-goals {
+  color: #64748b !important;
+  font-size: 0.73rem;
+}
+
+.pred-1x2 {
+  color: #94a3b8;
+}
+
+.pred-markets {
+  color: #64748b !important;
+  font-size: 0.73rem;
+}
+
+.pred-best {
+  margin-top: 0.15rem !important;
+  color: #facc15 !important;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.pred-best-prob {
+  background: #1e3a1a;
+  color: #4ade80;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.78rem;
 }
