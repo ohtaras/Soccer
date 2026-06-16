@@ -38,8 +38,9 @@ h1 {
 
 .winrate {
   text-align: center;
-  font-size: 0.8rem;
-  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f1f5f9;
   margin: 0 0 1.1rem;
 }
 
@@ -48,7 +49,7 @@ h1 {
 }
 
 .winrate-detail {
-  color: #334155;
+  color: #cbd5e1;
 }
 
 .error {
