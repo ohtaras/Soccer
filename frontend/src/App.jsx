@@ -10,10 +10,12 @@ const STATUS_LABELS = {
   post: 'Τελ.',
 }
 
+const TZ = 'Europe/Athens'
+
 function formatTime(isoDate) {
   if (!isoDate) return '--:--'
   const date = new Date(isoDate)
-  return date.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })
+  return date.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit', timeZone: TZ })
 }
 
 function teamLogoUrl(teamId) {
@@ -45,10 +47,7 @@ function groupByLeague(fixtures) {
 }
 
 function toDateInputValue(d) {
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return d.toLocaleDateString('sv', { timeZone: TZ })
 }
 
 function addDays(d, days) {
@@ -119,6 +118,7 @@ function App() {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
+    timeZone: TZ,
   })
 
   return (
