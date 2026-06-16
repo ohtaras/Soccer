@@ -226,21 +226,23 @@ h1 {
 
 .prediction p {
   margin: 0;
-  color: #cbd5e1;
+  color: #f1f5f9;
 }
 
 .pred-goals {
-  color: #94a3b8 !important;
-  font-size: 0.73rem;
+  color: #cbd5e1 !important;
+  font-size: 0.8rem;
 }
 
 .pred-1x2 {
-  color: #e2e8f0;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .pred-markets {
-  color: #94a3b8 !important;
-  font-size: 0.73rem;
+  color: #cbd5e1 !important;
+  font-size: 0.8rem;
 }
 
 .pred-best {
