@@ -1,12 +1,14 @@
 import logging
 import threading
 import time
+from datetime import date
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import fixtures, predictions
-from app.db.database import Base, engine
+from app.db.database import Base, SessionLocal, engine
+from app.db.models import SyncState
 from data.ingestion import api_football_history, predictions_sync, results_sync
 from data.ingestion.csv_loader import load_missing_leagues
 
@@ -39,8 +41,34 @@ def _seed_missing_leagues():
         logger.exception("Failed to load additional leagues' historical data on startup")
 
 
+def _already_ran_today(key: str) -> bool:
+    """Checks (and if not, claims) today's run for `key` in the DB.
+
+    Prevents redeploys from re-hitting the rate-limited live-data API more
+    than once per day — the in-process daemon threads otherwise fire again
+    on every restart regardless of how recently they last ran.
+    """
+    today = date.today()
+    db = SessionLocal()
+    try:
+        state = db.get(SyncState, key)
+        if state is not None and state.last_run_date == today:
+            return True
+        if state is None:
+            db.add(SyncState(key=key, last_run_date=today))
+        else:
+            state.last_run_date = today
+        db.commit()
+        return False
+    finally:
+        db.close()
+
+
 def _sync_results_loop():
     while True:
+        if _already_ran_today("sync_results"):
+            time.sleep(DAY_SECONDS)
+            continue
         try:
             count = results_sync.sync_finished_matches()
             logger.info("Synced %d finished match results", count)
@@ -51,6 +79,9 @@ def _sync_results_loop():
 
 def _sync_predictions_loop():
     while True:
+        if _already_ran_today("sync_predictions"):
+            time.sleep(DAY_SECONDS)
+            continue
         try:
             count = predictions_sync.sync_predictions()
             logger.info("Stored %d predictions for today's fixtures", count)

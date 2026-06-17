@@ -28,6 +28,16 @@ class Match(Base):
     away_team = relationship("Team", foreign_keys=[away_team_id])
 
 
+class SyncState(Base):
+    """Tracks the last day each background sync job ran, so redeploys don't
+    re-hit the rate-limited live-data API more than once per day."""
+
+    __tablename__ = "sync_state"
+
+    key = Column(String, primary_key=True)
+    last_run_date = Column(Date, nullable=False)
+
+
 class Prediction(Base):
     __tablename__ = "predictions"
 
