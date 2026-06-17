@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import fixtures, predictions
 from app.db.database import Base, engine
-from data.ingestion import api_football_history, results_sync
+from data.ingestion import api_football_history, predictions_sync, results_sync
 from data.ingestion.csv_loader import load_missing_leagues
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,16 @@ def _sync_results_loop():
         time.sleep(DAY_SECONDS)
 
 
+def _sync_predictions_loop():
+    while True:
+        try:
+            count = predictions_sync.sync_predictions()
+            logger.info("Stored %d predictions for today's fixtures", count)
+        except Exception:
+            logger.exception("Failed to sync today's predictions")
+        time.sleep(DAY_SECONDS)
+
+
 @app.on_event("startup")
 def seed_historical_data():
     """Load historical results for any league not yet present in the DB.
@@ -60,6 +70,7 @@ def seed_historical_data():
     Base.metadata.create_all(bind=engine)
     threading.Thread(target=_seed_missing_leagues, daemon=True).start()
     threading.Thread(target=_sync_results_loop, daemon=True).start()
+    threading.Thread(target=_sync_predictions_loop, daemon=True).start()
 
 
 @app.get("/api/health")
